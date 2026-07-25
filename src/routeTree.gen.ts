@@ -13,6 +13,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSalesRouteImport } from './routes/_authenticated/sales'
+import { Route as AuthenticatedPriceFinderRouteImport } from './routes/_authenticated/price-finder'
 import { Route as AuthenticatedDemosRouteImport } from './routes/_authenticated/demos'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
@@ -36,6 +37,12 @@ const AuthenticatedSalesRoute = AuthenticatedSalesRouteImport.update({
   path: '/sales',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPriceFinderRoute =
+  AuthenticatedPriceFinderRouteImport.update({
+    id: '/price-finder',
+    path: '/price-finder',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDemosRoute = AuthenticatedDemosRouteImport.update({
   id: '/demos',
   path: '/demos',
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/clients': typeof AuthenticatedClientsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/demos': typeof AuthenticatedDemosRoute
+  '/price-finder': typeof AuthenticatedPriceFinderRoute
   '/sales': typeof AuthenticatedSalesRoute
 }
 export interface FileRoutesByTo {
@@ -66,6 +74,7 @@ export interface FileRoutesByTo {
   '/clients': typeof AuthenticatedClientsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/demos': typeof AuthenticatedDemosRoute
+  '/price-finder': typeof AuthenticatedPriceFinderRoute
   '/sales': typeof AuthenticatedSalesRoute
 }
 export interface FileRoutesById {
@@ -76,13 +85,28 @@ export interface FileRoutesById {
   '/_authenticated/clients': typeof AuthenticatedClientsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/demos': typeof AuthenticatedDemosRoute
+  '/_authenticated/price-finder': typeof AuthenticatedPriceFinderRoute
   '/_authenticated/sales': typeof AuthenticatedSalesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/clients' | '/dashboard' | '/demos' | '/sales'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/clients'
+    | '/dashboard'
+    | '/demos'
+    | '/price-finder'
+    | '/sales'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/clients' | '/dashboard' | '/demos' | '/sales'
+  to:
+    | '/'
+    | '/login'
+    | '/clients'
+    | '/dashboard'
+    | '/demos'
+    | '/price-finder'
+    | '/sales'
   id:
     | '__root__'
     | '/'
@@ -91,6 +115,7 @@ export interface FileRouteTypes {
     | '/_authenticated/clients'
     | '/_authenticated/dashboard'
     | '/_authenticated/demos'
+    | '/_authenticated/price-finder'
     | '/_authenticated/sales'
   fileRoutesById: FileRoutesById
 }
@@ -130,6 +155,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSalesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/price-finder': {
+      id: '/_authenticated/price-finder'
+      path: '/price-finder'
+      fullPath: '/price-finder'
+      preLoaderRoute: typeof AuthenticatedPriceFinderRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/demos': {
       id: '/_authenticated/demos'
       path: '/demos'
@@ -158,6 +190,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDemosRoute: typeof AuthenticatedDemosRoute
+  AuthenticatedPriceFinderRoute: typeof AuthenticatedPriceFinderRoute
   AuthenticatedSalesRoute: typeof AuthenticatedSalesRoute
 }
 
@@ -165,6 +198,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedClientsRoute: AuthenticatedClientsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDemosRoute: AuthenticatedDemosRoute,
+  AuthenticatedPriceFinderRoute: AuthenticatedPriceFinderRoute,
   AuthenticatedSalesRoute: AuthenticatedSalesRoute,
 }
 
@@ -179,3 +213,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
