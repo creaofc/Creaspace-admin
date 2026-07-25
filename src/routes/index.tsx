@@ -1,24 +1,22 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
+  ssr: false,
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
+  const navigate = useNavigate();
+  useEffect(() => {
+    try {
+      const session = localStorage.getItem("crea_session");
+      const url = localStorage.getItem("crea_apps_script_url");
+      if (session && url) navigate({ to: "/dashboard" });
+      else navigate({ to: "/login" });
+    } catch {
+      navigate({ to: "/login" });
+    }
+  }, [navigate]);
+  return <div className="grid min-h-screen place-items-center text-muted-foreground">Loading…</div>;
 }
