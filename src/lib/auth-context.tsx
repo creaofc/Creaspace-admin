@@ -1,7 +1,12 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { api } from "./sheets-api";
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
+import { auth } from "./firebase";
+import { api } from "./firebase-api";
 
-interface AuthUser { email: string; role: string }
+interface AuthUser {
+  email: string;
+  role: string;
+}
 interface AuthState {
   user: AuthUser | null;
   loading: boolean;
@@ -10,34 +15,45 @@ interface AuthState {
 }
 
 const Ctx = createContext<AuthState | null>(null);
-const STORAGE = "crea_session";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE);
-      if (raw) setUser(JSON.parse(raw));
-    } catch {}
-    setLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser && firebaseUser.email) {
+        // We set a default role of admin for now. Roles can be expanded via Firestore user documents later.
+        setUser({ email: firebaseUser.email, role: "admin" });
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+    return () => unsubscribe();
   }, []);
 
   const login = async (email: string, password: string) => {
-    const res = await api.login(email, password);
-    if (res.ok && res.user) {
-      setUser(res.user);
-      localStorage.setItem(STORAGE, JSON.stringify(res.user));
-      return true;
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      if (userCredential.user && userCredential.user.email) {
+        setUser({ email: userCredential.user.email, role: "admin" });
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Login error:", error);
+      throw error; // Let the UI handle the error (e.g. invalid credentials)
     }
-    return false;
   };
 
   const logout = async () => {
-    try { if (user) await api.log("Logout", user.email); } catch {}
-    setUser(null);
-    localStorage.removeItem(STORAGE);
+    try {
+      if (user) await api.log("Logout", user.email);
+      await signOut(auth);
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   return <Ctx.Provider value={{ user, loading, login, logout }}>{children}</Ctx.Provider>;

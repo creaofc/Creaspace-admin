@@ -78,10 +78,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Creā Space ERP" },
-      { name: "description", content: "Business management system for Creā Space Digital Solutions." },
+      {
+        name: "description",
+        content: "Business management system for Creā Space Digital Solutions.",
+      },
       { name: "author", content: "Creā Space" },
       { property: "og:title", content: "Creā Space ERP" },
-      { property: "og:description", content: "Business management system for Creā Space Digital Solutions." },
+      {
+        property: "og:description",
+        content: "Business management system for Creā Space Digital Solutions.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },

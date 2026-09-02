@@ -3,7 +3,6 @@ import { useEffect } from "react";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
-import { getAppsScriptUrl } from "@/lib/sheets-api";
 import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -20,16 +19,14 @@ function Guarded() {
   const navigate = useNavigate();
   useEffect(() => {
     if (loading) return;
-    if (!getAppsScriptUrl() || !user) {
+    if (!user) {
       navigate({ to: "/login" });
     }
   }, [user, loading, navigate]);
 
   if (loading || !user) {
     return (
-      <div className="grid min-h-screen place-items-center text-muted-foreground">
-        Loading…
-      </div>
+      <div className="grid min-h-screen place-items-center text-muted-foreground">Loading…</div>
     );
   }
 
@@ -43,7 +40,7 @@ function Guarded() {
             <div className="flex-1" />
             <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              Live · Google Sheets
+              Live · Firebase
             </div>
           </header>
           <main className="flex-1 p-4 sm:p-6 lg:p-8">

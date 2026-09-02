@@ -29,42 +29,78 @@ async function request<T = any>(params: Record<string, string> = {}, body?: any)
 }
 
 export interface ClientRow {
-  "Client ID": string; "Client Name": string; "Business Name": string; "Location": string;
-  "Project Price": number; "Advance Payment": number; "Remaining Payment": number;
-  "Email": string; "Phone Number": string; "WordPress Username": string; "WordPress Password": string;
-  "Payment Status": string; "Created Date": string; "Updated Date": string;
+  "Client ID": string;
+  "Client Name": string;
+  "Business Name": string;
+  Location: string;
+  "Project Price": number;
+  "Advance Payment": number;
+  "Remaining Payment": number;
+  Email: string;
+  "Phone Number": string;
+  "WordPress Username": string;
+  "WordPress Password": string;
+  "Payment Status": string;
+  "Created Date": string;
+  "Updated Date": string;
 }
 export interface PaymentRow {
-  "Payment ID": string; "Client ID": string; "Client Name": string; "Business Name": string;
-  "Payment Amount": number; "Remaining Payment": number; "Payment Status": string; "Payment Date": string;
+  "Payment ID": string;
+  "Client ID": string;
+  "Client Name": string;
+  "Business Name": string;
+  "Payment Amount": number;
+  "Remaining Payment": number;
+  "Payment Status": string;
+  "Payment Date": string;
 }
 export interface ExpenseRow {
-  "Expense ID": string; "Expense Name": string; "Expense Details": string; "Expense Amount": number; "Expense Date": string;
+  "Expense ID": string;
+  "Expense Name": string;
+  "Expense Details": string;
+  "Expense Amount": number;
+  "Expense Date": string;
 }
 export interface DemoRow {
-  "Demo ID": string; "Business Name": string; "Demo Link": string; "Added Date": string;
+  "Demo ID": string;
+  "Business Name": string;
+  "Demo Link": string;
+  "Added Date": string;
 }
 export interface LogRow {
-  "Activity ID": string; "Activity": string; "User": string; "Date": string; "Time": string;
+  "Activity ID": string;
+  Activity: string;
+  User: string;
+  Date: string;
+  Time: string;
 }
 
 export const api = {
   ping: () => request({ action: "ping" }),
   login: (email: string, password: string) =>
     request<{ ok: boolean; user?: { email: string; role: string }; error?: string }>({
-      action: "login", email, password,
+      action: "login",
+      email,
+      password,
     }),
-  fetchAll: () => request<{
-    ok: true; clients: ClientRow[]; payments: PaymentRow[];
-    expenses: ExpenseRow[]; demos: DemoRow[]; logs: LogRow[];
-  }>({ action: "all" }),
+  fetchAll: () =>
+    request<{
+      ok: true;
+      clients: ClientRow[];
+      payments: PaymentRow[];
+      expenses: ExpenseRow[];
+      demos: DemoRow[];
+      logs: LogRow[];
+    }>({ action: "all" }),
   addClient: (data: any, user: string) => request({}, { action: "addClient", data, user }),
   updateClient: (data: any, user: string) => request({}, { action: "updateClient", data, user }),
-  deleteClient: (clientId: string, user: string) => request({}, { action: "deleteClient", clientId, user }),
+  deleteClient: (clientId: string, user: string) =>
+    request({}, { action: "deleteClient", clientId, user }),
   receivePayment: (data: { clientId: string; amount: number }, user: string) =>
     request({}, { action: "receivePayment", data, user }),
   addExpense: (data: any, user: string) => request({}, { action: "addExpense", data, user }),
-  deleteExpense: (expenseId: string, user: string) => request({}, { action: "deleteExpense", expenseId, user }),
+  deleteExpense: (expenseId: string, user: string) =>
+    request({}, { action: "deleteExpense", expenseId, user }),
   addDemo: (data: any, user: string) => request({}, { action: "addDemo", data, user }),
   deleteDemo: (demoId: string, user: string) => request({}, { action: "deleteDemo", demoId, user }),
   log: (activity: string, user: string) => request({}, { action: "log", activity, user }),
@@ -83,7 +119,9 @@ export function toCsv(rows: Record<string, any>[]): string {
     const s = String(v ?? "");
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
-  return [headers.join(","), ...rows.map((r) => headers.map((h) => esc(r[h])).join(","))].join("\n");
+  return [headers.join(","), ...rows.map((r) => headers.map((h) => esc(r[h])).join(","))].join(
+    "\n",
+  );
 }
 
 export function downloadCsv(filename: string, rows: Record<string, any>[]) {
@@ -91,6 +129,8 @@ export function downloadCsv(filename: string, rows: Record<string, any>[]) {
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = url; a.download = filename; a.click();
+  a.href = url;
+  a.download = filename;
+  a.click();
   URL.revokeObjectURL(url);
 }
