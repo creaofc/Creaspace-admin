@@ -191,7 +191,7 @@ function SalesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Sales & Analytics</h1>
@@ -272,7 +272,7 @@ function SalesPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-8 duration-700">
         <StatCard
           label="Total Revenue"
           value={fmtMoney(totals.totalRevenue)}
@@ -318,7 +318,7 @@ function SalesPage() {
         />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2 animate-in fade-in slide-in-from-bottom-12 duration-1000">
         <Card className="glass p-5">
           <h3 className="mb-3 text-sm font-semibold">Revenue Trend</h3>
           <div className="h-64">

@@ -71,17 +71,17 @@ export const api = {
       const paymentsSnapshot = await getDocs(collection(db, "payments"));
       const expensesSnapshot = await getDocs(collection(db, "expenses"));
       const demosSnapshot = await getDocs(collection(db, "demos"));
-      const logsSnapshot = await getDocs(
-        query(collection(db, "logs"), orderBy("Date", "desc"), orderBy("Time", "desc")),
-      );
+      const logsSnapshot = await getDocs(collection(db, "logs"));
 
       return {
         ok: true as const,
-        clients: clientsSnapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as ClientRow[],
-        payments: paymentsSnapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as PaymentRow[],
-        expenses: expensesSnapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as ExpenseRow[],
-        demos: demosSnapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as DemoRow[],
-        logs: logsSnapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as LogRow[],
+        clients: (clientsSnapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as ClientRow[]).sort((a, b) => new Date(a["Created Date"] || 0).getTime() - new Date(b["Created Date"] || 0).getTime()),
+        payments: (paymentsSnapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as PaymentRow[]).sort((a, b) => new Date(a["Payment Date"] || 0).getTime() - new Date(b["Payment Date"] || 0).getTime()),
+        expenses: (expensesSnapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as ExpenseRow[]).sort((a, b) => new Date(a["Expense Date"] || 0).getTime() - new Date(b["Expense Date"] || 0).getTime()),
+        demos: (demosSnapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as DemoRow[]).sort((a, b) => new Date(a["Added Date"] || 0).getTime() - new Date(b["Added Date"] || 0).getTime()),
+        logs: (logsSnapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as LogRow[]).sort((a, b) => {
+          return (Number(b["Activity ID"]) || 0) - (Number(a["Activity ID"]) || 0);
+        }),
       };
     } catch (error: any) {
       console.error("Fetch Error:", error);
@@ -93,9 +93,10 @@ export const api = {
     const projectPrice = Number(data.projectPrice) || 0;
     const advancePayment = Number(data.advancePayment) || 0;
     const remainingPayment = projectPrice - advancePayment;
+    const clientIdStr = Date.now().toString();
 
     const mapped = {
-      "Client ID": Date.now().toString(),
+      "Client ID": clientIdStr,
       "Client Name": data.clientName || "",
       "Business Name": data.businessName || "",
       Location: data.location || "",
@@ -112,6 +113,18 @@ export const api = {
     };
 
     const docRef = await addDoc(collection(db, "clients"), mapped);
+    
+    if (advancePayment > 0) {
+      await addDoc(collection(db, "payments"), {
+        "Payment ID": Date.now().toString() + "-adv",
+        "Client ID": clientIdStr,
+        "Client Name": mapped["Client Name"],
+        "Business Name": mapped["Business Name"],
+        "Payment Amount": advancePayment,
+        "Payment Date": mapped["Created Date"],
+      });
+    }
+
     await api.log(`Added client ${mapped["Client Name"]}`, user);
     return { ok: true, id: docRef.id };
   },

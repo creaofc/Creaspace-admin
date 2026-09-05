@@ -113,7 +113,7 @@ function Dashboard() {
     { name: "Completed", value: totals.completed },
     { name: "Pending", value: totals.pending },
   ];
-  const pieColors = ["oklch(0.65 0.2 160)", "oklch(0.65 0.28 25)"];
+  const pieColors = ["oklch(0.7 0.12 180)", "oklch(0.48 0.25 285)"];
 
   return (
     <div className="space-y-6">
@@ -122,7 +122,7 @@ function Dashboard() {
         <p className="text-sm text-muted-foreground">Real-time overview from Google Sheets.</p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <StatCard label="Total Clients" value={clients.length} icon={Users} accent="primary" />
         <StatCard label="Active Clients" value={totals.active} icon={UserCheck} accent="primary" />
         <StatCard label="Completed" value={totals.completed} icon={CheckCircle2} accent="emerald" />
@@ -172,7 +172,7 @@ function Dashboard() {
         <StatCard label="Activity Logs" value={logs.length} icon={Activity} accent="primary" />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2 animate-in fade-in slide-in-from-bottom-8 duration-700">
         <Card className="glass p-5">
           <h3 className="mb-3 text-sm font-semibold">Monthly Revenue</h3>
           <div className="h-64">
@@ -282,7 +282,7 @@ function Dashboard() {
         </Card>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2 animate-in fade-in slide-in-from-bottom-12 duration-1000">
         <Card className="glass p-5">
           <h3 className="mb-3 text-sm font-semibold">Latest Clients</h3>
           <ul className="space-y-2">
