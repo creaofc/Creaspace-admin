@@ -25,7 +25,7 @@ const items = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, isMobile, setOpenMobile } = useSidebar();
   const collapsed = state === "collapsed";
   const path = useRouterState({ select: (r) => r.location.pathname });
   const { logout } = useAuth();
@@ -61,6 +61,9 @@ export function AppSidebar() {
                       asChild
                       isActive={active}
                       className="data-[active=true]:bg-primary/15 data-[active=true]:text-primary"
+                      onClick={() => {
+                        if (isMobile) setOpenMobile(false);
+                      }}
                     >
                       <Link to={it.url} className="flex items-center gap-3">
                         <it.icon className="h-4 w-4 shrink-0" />
@@ -79,6 +82,7 @@ export function AppSidebar() {
           variant="ghost"
           className="w-full justify-start gap-3 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
           onClick={async () => {
+            if (isMobile) setOpenMobile(false);
             await logout();
             navigate({ to: "/login" });
           }}
