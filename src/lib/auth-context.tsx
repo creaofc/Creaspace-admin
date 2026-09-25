@@ -23,8 +23,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser && firebaseUser.email) {
-        // We set a default role of admin for now. Roles can be expanded via Firestore user documents later.
-        setUser({ email: firebaseUser.email, role: "admin" });
+        const r = firebaseUser.email === "inquiry.crea@gmail.com" ? "admin" : "user";
+        setUser({ email: firebaseUser.email, role: r });
       } else {
         setUser(null);
       }
@@ -37,7 +37,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       if (userCredential.user && userCredential.user.email) {
-        setUser({ email: userCredential.user.email, role: "admin" });
+        const r = userCredential.user.email === "inquiry.crea@gmail.com" ? "admin" : "user";
+        setUser({ email: userCredential.user.email, role: r });
         return true;
       }
       return false;

@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, Users, TrendingUp, Presentation, Calculator, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, TrendingUp, Presentation, Calculator, LogOut, User, CheckSquare } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -21,6 +21,7 @@ const items = [
   { title: "Clients", url: "/clients", icon: Users },
   { title: "Sales", url: "/sales", icon: TrendingUp },
   { title: "Demos", url: "/demos", icon: Presentation },
+  { title: "Daily Tracker", url: "/tracker", icon: CheckSquare },
   { title: "Price Finder", url: "/price-finder", icon: Calculator },
 ];
 
@@ -28,7 +29,7 @@ export function AppSidebar() {
   const { state, isMobile, setOpenMobile } = useSidebar();
   const collapsed = state === "collapsed";
   const path = useRouterState({ select: (r) => r.location.pathname });
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
 
   return (
@@ -77,7 +78,22 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="p-2">
+      <SidebarFooter className="p-2 space-y-2">
+        {user && (
+          <div className="flex items-center gap-3 px-2 py-2">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <User className="h-4 w-4" />
+            </div>
+            {!collapsed && (
+              <div className="flex flex-col min-w-0">
+                <span className="truncate text-xs text-muted-foreground">Logged in as</span>
+                <span className="truncate text-sm font-medium" title={user.email}>
+                  {user.email}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
         <Button
           variant="ghost"
           className="w-full justify-start gap-3 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"

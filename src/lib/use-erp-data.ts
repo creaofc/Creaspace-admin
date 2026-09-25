@@ -1,10 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
-import { api } from "./firebase-api";
+import { api, handleApiError } from "./firebase-api";
 
 export function useErpData() {
   return useQuery({
     queryKey: ["erp-all"],
-    queryFn: () => api.fetchAll(),
+    queryFn: async () => {
+      try {
+        return await api.fetchAll();
+      } catch (err) {
+        handleApiError(err);
+        throw err;
+      }
+    },
     staleTime: 15_000,
     refetchOnWindowFocus: true,
   });

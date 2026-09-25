@@ -63,6 +63,21 @@ export interface LogRow {
   Time: string;
   id?: string;
 }
+export interface TaskRow {
+  title: string;
+  project: string;
+  assignedTo: string;
+  priority: string;
+  startDate: string;
+  deadline: string;
+  description: string;
+  checklist: { item: string; completed: boolean }[];
+  status: string;
+  updates: { date: string; description: string; user: string }[];
+  history: { date: string; action: string; user: string }[];
+  createdAt: string;
+  id?: string;
+}
 
 export const api = {
   fetchAll: async () => {
@@ -72,6 +87,7 @@ export const api = {
       const expensesSnapshot = await getDocs(collection(db, "expenses"));
       const demosSnapshot = await getDocs(collection(db, "demos"));
       const logsSnapshot = await getDocs(collection(db, "logs"));
+      const tasksSnapshot = await getDocs(collection(db, "tasks"));
 
       return {
         ok: true as const,
@@ -82,6 +98,7 @@ export const api = {
         logs: (logsSnapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as LogRow[]).sort((a, b) => {
           return (Number(b["Activity ID"]) || 0) - (Number(a["Activity ID"]) || 0);
         }),
+        tasks: (tasksSnapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as TaskRow[]).sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()),
       };
     } catch (error: any) {
       console.error("Fetch Error:", error);
@@ -247,6 +264,77 @@ export const api = {
     if (!docId) throw new Error("Document ID required for delete");
     await deleteDoc(doc(db, "demos", docId));
     await api.log(`Deleted demo`, user);
+    return { ok: true };
+  },
+
+  addTask: async (data: any, user: string) => {
+    const mapped: TaskRow = {
+      title: data.title || "",
+      project: data.project || "",
+      assignedTo: data.assignedTo || "",
+      priority: data.priority || "Medium",
+      startDate: data.startDate || new Date().toISOString(),
+      deadline: data.deadline || "",
+      description: data.description || "",
+      checklist: data.checklist || [],
+      status: "Pending",
+      updates: [],
+      history: [{ date: new Date().toISOString(), action: "Task assigned", user }],
+      createdAt: new Date().toISOString(),
+    };
+    const docRef = await addDoc(collection(db, "tasks"), mapped);
+    
+    // Send email notification via Google Apps Script
+    try {
+      const scriptUrl = import.meta.env.VITE_APPS_SCRIPT_URL;
+      if (scriptUrl && scriptUrl.includes("/macros/s/") && !scriptUrl.includes("YOUR_SCRIPT_ID")) {
+        await fetch(scriptUrl, {
+          method: 'POST',
+          mode: 'no-cors', // Bypasses strict CORS policies for Apps Script
+          headers: {
+            'Content-Type': 'text/plain', // Required for no-cors JSON payload
+          },
+          body: JSON.stringify({
+            type: "assign_task",
+            to: mapped.assignedTo,
+            subject: `New Task Assigned – ${mapped.title}`,
+            body: `Hello,\n\nA new task has been assigned to you.\n\nProject: ${mapped.project}\nPriority: ${mapped.priority}\nDeadline: ${mapped.deadline}\n\nPlease login to Creā Space CMS to begin working.\n\n— Creā Space`
+          })
+        });
+      } else {
+        console.warn("VITE_APPS_SCRIPT_URL is not configured properly in .env. Email was skipped.");
+      }
+    } catch (e) {
+      console.error("Failed to send email notification via Apps Script", e);
+    }
+
+    await api.log(`Assigned task "${mapped.title}" to ${mapped.assignedTo}`, user);
+    return { ok: true, id: docRef.id };
+  },
+
+  updateTaskProgress: async (taskId: string, updateData: any, user: string) => {
+    const docRef = doc(db, "tasks", taskId);
+    const now = new Date().toISOString();
+    await updateDoc(docRef, {
+      status: updateData.status,
+      checklist: updateData.checklist,
+      updates: updateData.updateText ? [
+        ...updateData.existingUpdates,
+        { date: now, description: updateData.updateText, user }
+      ] : updateData.existingUpdates,
+      history: [
+        ...updateData.existingHistory,
+        { date: now, action: `Status changed to ${updateData.status}`, user }
+      ]
+    });
+    await api.log(`Updated task ${taskId} progress`, user);
+    return { ok: true };
+  },
+
+  deleteTask: async (docId: string, user: string) => {
+    if (!docId) throw new Error("Document ID required for delete");
+    await deleteDoc(doc(db, "tasks", docId));
+    await api.log(`Deleted task`, user);
     return { ok: true };
   },
 
